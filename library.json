@@ -1,0 +1,20 @@
+{
+    "name": "ConMan",
+    "keywords": "wifi, mqtt, webserver",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Rocka84/ConMan.git"
+    },
+    "version": "0.1",
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "espressif8266",
+        "espressif32"
+    ],
+    "dependencies": {
+        "knolleary/PubSubClient": "^2.8.0",
+        "WiFiManager": "https://github.com/Rocka84/WiFiManager#0.16.1",
+        "ayushsharma82/ElegantOTA": "^2.2.8"
+    }
+}
