@@ -10,19 +10,9 @@
 #define CM_DEBUGLN(...) /**/
 #endif
 
-void(* conManReset) (void) = 0;
+#define CM_RTC_START    13
 
-void ConMan::init(const char *_device_name, const char *_ap_password) {
-    device_name = _device_name;
-    ap_password = _ap_password;
-    server.reset(new ESP8266WebServer(80));
-    mqtt.reset(new PubSubClient(espClient));
-#ifdef CONMANDBG
-    wm.setDebugOutput(true);
-#else
-    wm.setDebugOutput(false);
-#endif
-}
+void(* conManReset) (void) = 0;
 
 ConMan::ConMan(const char *_device_name) {
     init(_device_name, "");
@@ -34,6 +24,20 @@ ConMan::ConMan(const char *_device_name, const char *_ap_password) {
 
 
 // -----  private  -----
+
+void ConMan::init(const char *_device_name, const char *_ap_password) {
+    device_name = _device_name;
+    ap_password = _ap_password;
+    server.reset(new ESP8266WebServer(80));
+    mqtt.reset(new PubSubClient(espClient));
+#ifdef CONMANDBG
+    wm.setDebugOutput(true);
+#else
+    wm.setDebugOutput(false);
+#endif
+
+    // checkStartConfig();
+}
 
 bool ConMan::readEEPROM() {
     unsigned int pos=0;
@@ -141,6 +145,24 @@ void ConMan::saveWifiManager() {
     writeEEPROM();
 }
 
+void ConMan::callbackWrapper(char* topic, uint8_t* payload, unsigned int length) {
+    char payloadChars[length+1];
+    for (unsigned int i = 0; i < length; i++) {
+        if (payload[i]>=20 && payload[i]<=126) {
+            payloadChars[i] = (char) payload[i];
+        }
+    }
+    payloadChars[length] = '\0';
+
+    mqtt_callback(topic, payloadChars);
+}
+
+void ConMan::reset() {
+    delay(1000);
+    conManReset();
+    for(;;) delay(1000);
+}
+
 
 // -----  public  -----
 
@@ -188,12 +210,59 @@ void ConMan::wifiStartConfig() {
     saveWifiManager();
 }
 
+void ConMan::checkStartConfig() {
+    CM_DEBUGLN("ConMan::checkStartConfig");
+    int rtcMem;
+    system_rtc_mem_read(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+    CM_DEBUG("rtcMem ");
+    CM_DEBUGLN(rtcMem);
+    if (rtcMem != CM_RTC_START) return;
+    rtcMem = 0;
+    system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+
+    wifiAutoSetup();
+    wifiStartConfig();
+
+    conManReset();
+    for(;;) delay(1000);
+}
+
+void ConMan::triggerStartConfig() {
+    int rtcMem = CM_RTC_START;
+    system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+    reset();
+}
 
 
-void ConMan::setupServer() {
-    ElegantOTA.begin(server.get());
+
+void ConMan::setupServer(bool enable_default_routes, bool enable_ota) {
+    if (enable_ota) ElegantOTA.begin(server.get());
+
     server->begin();
     server_setup_done = true;
+
+    if (!enable_default_routes) return;
+    server->on("/start_config", [=]() {
+        getServer()->send(200, "application/json", "{\"start_config\": true, \"reset\": true}");
+        triggerStartConfig();
+    });
+    server->on("/reset_config", [=]() {
+        getServer()->send(200, "application/json", "{\"reset_config\": true, \"reset\": true}");
+        resetSettings();
+        reset();
+    });
+    server->on("/reset", [=]() {
+        getServer()->send(200, "application/json", "{\"reset\": true}");
+        reset();
+    });
+}
+
+void ConMan::setupServer(bool enable_default_routes) {
+    setupServer(enable_default_routes, true);
+}
+
+void ConMan::setupServer() {
+    setupServer(true, true);
 }
 
 void ConMan::serverOn(const String &uri, THandlerFunction handler) {
@@ -249,18 +318,6 @@ bool ConMan::setMqttCallback(MQTT_CALLBACK_SIGNATURE) {
     this->mqtt_callback = NULL;
     mqtt->setCallback(callback);
     return true;
-}
-
-void ConMan::callbackWrapper(char* topic, uint8_t* payload, unsigned int length) {
-    char payloadChars[length+1];
-    for (unsigned int i = 0; i < length; i++) {
-        if (payload[i]>=20 && payload[i]<=126) {
-            payloadChars[i] = (char) payload[i];
-        }
-    }
-    payloadChars[length] = '\0';
-
-    mqtt_callback(topic, payloadChars);
 }
 
 bool ConMan::mqttConnect() {

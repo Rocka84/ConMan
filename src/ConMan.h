@@ -58,6 +58,7 @@ class ConMan {
         void saveWifiManager();
 
         void callbackWrapper(char*, uint8_t*, unsigned int);
+        void reset();
 
     public:
         ConMan(const char *_device_name);
@@ -68,7 +69,11 @@ class ConMan {
         void wifiStartAP();
         bool isApMode();
         void wifiStartConfig();
+        void checkStartConfig();
+        void triggerStartConfig();
 
+        void setupServer(bool enable_default_routes, bool enable_ota);
+        void setupServer(bool enable_default_routes);
         void setupServer();
         void serverOn(const String &uri, THandlerFunction handler);
         void serverOn(const String &uri, HTTPMethod method, THandlerFunction fn);
