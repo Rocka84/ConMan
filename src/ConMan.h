@@ -8,7 +8,7 @@
 #define ConMan_h
 
 
-#define EEPROM_CHECK 44
+#define EEPROM_CHECK 41
 
 #if defined(ESP8266) || defined(ESP32)
 #include <functional>
@@ -32,6 +32,7 @@ class ConMan {
         std::unique_ptr<WiFiManagerParameter> wm_param_mqtt_user;
         std::unique_ptr<WiFiManagerParameter> wm_param_mqtt_password;
 
+        bool wifi_setup_done = false;
         const char* device_name;
         const char* ap_password;
         bool ap_mode = false;
@@ -67,6 +68,7 @@ class ConMan {
         void wifiAutoSetup();
         bool wifiConnectAsClient();
         void wifiStartAP();
+        bool isWifiSetupDone();
         bool isApMode();
         void wifiStartConfig();
         void checkStartConfig();
@@ -75,6 +77,7 @@ class ConMan {
         void setupServer(bool enable_default_routes, bool enable_ota);
         void setupServer(bool enable_default_routes);
         void setupServer();
+        bool isServerSetupDone();
         void serverOn(const String &uri, THandlerFunction handler);
         void serverOn(const String &uri, HTTPMethod method, THandlerFunction fn);
         void serverOn(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn);
@@ -82,6 +85,7 @@ class ConMan {
 
         bool setupMqtt();
         bool setupMqtt(CM_CALLBACK_SIGNATURE);
+        bool isMqttSetupDone();
         bool setMqttCallback(CM_CALLBACK_SIGNATURE);
         bool setMqttCallback(MQTT_CALLBACK_SIGNATURE);
 

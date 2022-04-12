@@ -179,6 +179,7 @@ bool ConMan::wifiConnectAsClient() {
     if (wm.connectWifi("", "") == WL_CONNECTED) {
         CM_DEBUG("Client mode, IP address: ");
         CM_DEBUGLN(WiFi.localIP());
+        wifi_setup_done = true;
         return true;
     }
     return false;
@@ -186,9 +187,14 @@ bool ConMan::wifiConnectAsClient() {
 
 void ConMan::wifiStartAP() {
     WiFi.softAP(device_name, ap_password);
+    wifi_setup_done = true;
     ap_mode = true;
     CM_DEBUG("AP mode, IP address: ");
     CM_DEBUGLN(WiFi.softAPIP());
+}
+
+bool ConMan::isWifiSetupDone() {
+    return wifi_setup_done;
 }
 
 bool ConMan::isApMode() {
@@ -243,16 +249,16 @@ void ConMan::setupServer(bool enable_default_routes, bool enable_ota) {
 
     if (!enable_default_routes) return;
     server->on("/start_config", [=]() {
-        getServer()->send(200, "application/json", "{\"start_config\": true, \"reset\": true}");
+        server->send(200, "application/json", "{\"start_config\": true, \"reset\": true}");
         triggerStartConfig();
     });
     server->on("/reset_config", [=]() {
-        getServer()->send(200, "application/json", "{\"reset_config\": true, \"reset\": true}");
+        server->send(200, "application/json", "{\"reset_config\": true, \"reset\": true}");
         resetSettings();
         reset();
     });
     server->on("/reset", [=]() {
-        getServer()->send(200, "application/json", "{\"reset\": true}");
+        server->send(200, "application/json", "{\"reset\": true}");
         reset();
     });
 }
@@ -263,6 +269,10 @@ void ConMan::setupServer(bool enable_default_routes) {
 
 void ConMan::setupServer() {
     setupServer(true, true);
+}
+
+bool ConMan::isServerSetupDone() {
+    return server_setup_done;
 }
 
 void ConMan::serverOn(const String &uri, THandlerFunction handler) {
@@ -300,6 +310,10 @@ bool ConMan::setupMqtt(CM_CALLBACK_SIGNATURE) {
 
 bool ConMan::setupMqtt() {
     return setupMqtt(NULL);
+}
+
+bool ConMan::isMqttSetupDone() {
+    return mqtt_setup_done;
 }
 
 bool ConMan::setMqttCallback(CM_CALLBACK_SIGNATURE) {
