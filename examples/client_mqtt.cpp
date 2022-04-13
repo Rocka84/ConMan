@@ -9,10 +9,9 @@ void loop() {
 
 void setup() {
     if (!cm.wifiConnectAsClient() || !cm.setupMqtt()) {
-        cm.startConfigPortal();
+        cm.wifiStartConfig();
         return; //should not be needed, controller is reset after configuring
     }
 
-    char* state = "unknown";
-    cm.mqttPublish("mydevice/status", state);
+    cm.mqttPublish("MyDevice/status", "unknown");
 }
