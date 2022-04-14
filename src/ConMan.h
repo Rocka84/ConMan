@@ -90,8 +90,8 @@ class ConMan {
         bool setMqttCallback(MQTT_CALLBACK_SIGNATURE);
 
         bool mqttConnect();
-        bool mqttPublish(char* topic, const char* payload, bool retain);
-        bool mqttPublish(char* topic, const char* payload);
+        bool mqttPublish(const char* topic, const char* payload, bool retain);
+        bool mqttPublish(const char* topic, const char* payload);
         bool mqttSubscribe(const char* topic);
         bool mqttSubscribe(const char* topic, uint8_t qos);
 

@@ -342,7 +342,7 @@ bool ConMan::mqttConnect() {
     return mqtt->connect(mqtt_client_id, mqtt_user, mqtt_password, topic_availability, 1, true, "offline");
 }
 
-bool ConMan::mqttPublish(char* topic, const char* payload, bool retain) {
+bool ConMan::mqttPublish(const char* topic, const char* payload, bool retain) {
     if (!mqtt_setup_done) return false;
     if (!mqttConnect()) return false;
 
@@ -350,7 +350,7 @@ bool ConMan::mqttPublish(char* topic, const char* payload, bool retain) {
     return true;
 }
 
-bool ConMan::mqttPublish(char* topic, const char* payload) {
+bool ConMan::mqttPublish(const char* topic, const char* payload) {
     return mqttPublish(topic, payload, true);
 }
 
