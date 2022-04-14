@@ -70,9 +70,10 @@ class ConMan {
         void wifiStartAP();
         bool isWifiSetupDone();
         bool isApMode();
+        IPAddress getIP();
         void wifiStartConfig();
         void checkStartConfig();
-        void triggerStartConfig();
+        void restartIntoConfig();
 
         void setupServer(bool enable_default_routes, bool enable_ota);
         void setupServer(bool enable_default_routes);

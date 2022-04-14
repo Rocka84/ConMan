@@ -201,6 +201,13 @@ bool ConMan::isApMode() {
     return ap_mode;
 }
 
+IPAddress ConMan::getIP() {
+    if (ap_mode) {
+        return WiFi.softAPIP();
+    }
+    return WiFi.localIP();
+}
+
 void ConMan::wifiStartConfig() {
     CM_DEBUGLN("startConfigPortal");
     readEEPROM();
@@ -233,7 +240,7 @@ void ConMan::checkStartConfig() {
     for(;;) delay(1000);
 }
 
-void ConMan::triggerStartConfig() {
+void ConMan::restartIntoConfig() {
     int rtcMem = CM_RTC_START;
     system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
     reset();
@@ -250,7 +257,7 @@ void ConMan::setupServer(bool enable_default_routes, bool enable_ota) {
     if (!enable_default_routes) return;
     server->on("/start_config", [=]() {
         server->send(200, "application/json", "{\"start_config\": true, \"reset\": true}");
-        triggerStartConfig();
+        restartIntoConfig();
     });
     server->on("/reset_config", [=]() {
         server->send(200, "application/json", "{\"reset_config\": true, \"reset\": true}");
