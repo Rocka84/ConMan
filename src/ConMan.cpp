@@ -176,6 +176,7 @@ void ConMan::wifiAutoSetup() {
 
 bool ConMan::wifiConnectAsClient() {
     CM_DEBUGLN("wifiConnectAsClient");
+    WiFi.mode(WIFI_STA);
     if (wm.connectWifi("", "") == WL_CONNECTED) {
         CM_DEBUG("Client mode, IP address: ");
         CM_DEBUGLN(WiFi.localIP());
@@ -186,6 +187,7 @@ bool ConMan::wifiConnectAsClient() {
 }
 
 void ConMan::wifiStartAP() {
+    WiFi.mode(WIFI_AP);
     WiFi.softAP(device_name, ap_password);
     wifi_setup_done = true;
     ap_mode = true;
