@@ -5,10 +5,9 @@
         "type": "git",
         "url": "https://github.com/Rocka84/ConMan.git"
     },
-    "version": "1.0",
+    "version": "1.0.1",
     "frameworks": "arduino",
     "platforms": [
-        "atmelavr",
         "espressif8266",
         "espressif32"
     ],

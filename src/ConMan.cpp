@@ -358,7 +358,7 @@ bool ConMan::mqttPublish(const char* topic, const char* payload, bool retain) {
 }
 
 bool ConMan::mqttPublish(const char* topic, const char* payload) {
-    return mqttPublish(topic, payload, true);
+    return mqttPublish(topic, payload, false);
 }
 
 bool ConMan::mqttSubscribe(const char* topic) {
