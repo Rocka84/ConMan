@@ -132,7 +132,7 @@ void ConMan::loopMqtt() {
     }
     mqtt->loop();
 
-    if (millis() - heartbeat_time >= 300000) {
+    if (millis() - heartbeat_time >= 100000) {
         heartbeat_time = millis();
         mqttPublish(topic_availability, "online");
     }
