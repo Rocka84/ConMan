@@ -45,7 +45,7 @@ bool ConMan::readEEPROM() {
 
     EEPROM.begin(512);
 
-    if (EEPROM.read(pos) != EEPROM_CHECK) {
+    if (EEPROM.read(pos) != CM_EEPROM_CHECK) {
         CM_DEBUGLN("eeprom invalid");
         return false;
     }
@@ -104,7 +104,7 @@ void ConMan::writeEEPROM() {
 
     EEPROM.begin(512);
 
-    EEPROM.write(pos, EEPROM_CHECK);
+    EEPROM.write(pos, CM_EEPROM_CHECK);
     pos++;
 
     for (int step = 0; step < 3; step++) {
@@ -132,7 +132,7 @@ void ConMan::loopMqtt() {
     }
     mqtt->loop();
 
-    if (millis() - heartbeat_time >= 100000) {
+    if (millis() - heartbeat_time >= 120000) {
         heartbeat_time = millis();
         mqttPublish(topic_availability, "online");
     }

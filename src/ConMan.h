@@ -8,7 +8,9 @@
 #define ConMan_h
 
 
-#define EEPROM_CHECK 41
+#ifndef CM_EEPROM_CHECK
+#define CM_EEPROM_CHECK 42
+#endif
 
 #if defined(ESP8266) || defined(ESP32)
 #include <functional>
