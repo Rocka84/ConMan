@@ -8,7 +8,9 @@
 #define ConMan_h
 
 
-#define EEPROM_CHECK 41
+#ifndef CM_EEPROM_CHECK
+#define CM_EEPROM_CHECK 42
+#endif
 
 #if defined(ESP8266) || defined(ESP32)
 #include <functional>
@@ -59,7 +61,6 @@ class ConMan {
         void saveWifiManager();
 
         void callbackWrapper(char*, uint8_t*, unsigned int);
-        void reset();
 
     public:
         ConMan(const char *_device_name);
@@ -72,8 +73,11 @@ class ConMan {
         bool isApMode();
         IPAddress getIP();
         void wifiStartConfig();
-        void checkStartConfig();
+        bool checkStartConfig();
         void restartIntoConfig();
+        bool checkStartOtaMode();
+        bool checkStartOtaMode(bool default_route);
+        void restartIntoOtaMode();
 
         void setupServer(bool enable_default_routes, bool enable_ota);
         void setupServer(bool enable_default_routes);
@@ -99,6 +103,7 @@ class ConMan {
         bool payloadToBool(char* payload);
         bool payloadToBool(char* payload, bool before);
 
+        void reset();
         void resetSettings();
 
         void loop();

@@ -45,7 +45,7 @@ bool ConMan::readEEPROM() {
 
     EEPROM.begin(512);
 
-    if (EEPROM.read(pos) != EEPROM_CHECK) {
+    if (EEPROM.read(pos) != CM_EEPROM_CHECK) {
         CM_DEBUGLN("eeprom invalid");
         return false;
     }
@@ -104,7 +104,7 @@ void ConMan::writeEEPROM() {
 
     EEPROM.begin(512);
 
-    EEPROM.write(pos, EEPROM_CHECK);
+    EEPROM.write(pos, CM_EEPROM_CHECK);
     pos++;
 
     for (int step = 0; step < 3; step++) {
@@ -127,12 +127,12 @@ void ConMan::writeEEPROM() {
 
 void ConMan::loopMqtt() {
     if (!mqttConnect()) {
-        conManReset();
+        reset();
         return;
     }
     mqtt->loop();
 
-    if (millis() - heartbeat_time >= 100000) {
+    if (millis() - heartbeat_time >= 120000) {
         heartbeat_time = millis();
         mqttPublish(topic_availability, "online");
     }
@@ -225,29 +225,61 @@ void ConMan::wifiStartConfig() {
     saveWifiManager();
 }
 
-void ConMan::checkStartConfig() {
+void ConMan::restartIntoConfig() {
+    int rtcMem = CM_RTC_START;
+    system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+    delay(100);
+    reset();
+}
+
+bool ConMan::checkStartConfig() {
     CM_DEBUGLN("ConMan::checkStartConfig");
     int rtcMem;
     system_rtc_mem_read(CM_RTC_START, &rtcMem, sizeof(rtcMem));
     CM_DEBUG("rtcMem ");
     CM_DEBUGLN(rtcMem);
-    if (rtcMem != CM_RTC_START) return;
+    if (rtcMem != CM_RTC_START) return false;
     rtcMem = 0;
     system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
 
     wifiAutoSetup();
     wifiStartConfig();
 
-    conManReset();
-    for(;;) delay(1000);
+    reset();
+
+    return true;
 }
 
-void ConMan::restartIntoConfig() {
-    int rtcMem = CM_RTC_START;
+
+bool ConMan::checkStartOtaMode() {
+    checkStartOtaMode(false);
+}
+
+bool ConMan::checkStartOtaMode(bool default_route) {
+    int rtcMem;
+    system_rtc_mem_read(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+    if (rtcMem != CM_RTC_START + 1) return false;
+
+    setupServer(false, true);
+
+    rtcMem = 0;
     system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+
+    if (default_route) {
+        serverOn("/", [=]() {
+            server->sendHeader("Location", String("/update"), true);
+            server->send(302, "text/plain", "");
+        });
+    }
+    return true;
+}
+
+void ConMan::restartIntoOtaMode() {
+    int rtcMem = CM_RTC_START + 1;
+    system_rtc_mem_write(CM_RTC_START, &rtcMem, sizeof(rtcMem));
+    delay(100);
     reset();
 }
-
 
 
 void ConMan::setupServer(bool enable_default_routes, bool enable_ota) {
