@@ -91,6 +91,7 @@ class ConMan {
         bool setupMqtt();
         bool setupMqtt(CM_CALLBACK_SIGNATURE);
         bool isMqttSetupDone();
+        bool isMqttConnected();
         bool setMqttCallback(CM_CALLBACK_SIGNATURE);
         bool setMqttCallback(MQTT_CALLBACK_SIGNATURE);
 

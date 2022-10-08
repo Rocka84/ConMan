@@ -375,8 +375,13 @@ bool ConMan::setMqttCallback(MQTT_CALLBACK_SIGNATURE) {
     return true;
 }
 
+bool ConMan::isMqttConnected() {
+    return mqtt->connected();
+}
+
 bool ConMan::mqttConnect() {
     // CM_DEBUGLN("connecting mqtt");
+    if (!wifi_setup_done) return false;
     if (mqtt->connected()) return true;
 
     mqtt->setServer(mqtt_host, 1883);
