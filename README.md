@@ -65,6 +65,7 @@ void setup() {
 
     cm.serverOn("/toggle", []() {
         toggle = !toggle;
+        cm.mqttPublish("MyDevice/status/toggle", toggle ? "ON" : "OFF");
         cm.getServer()->send(200, "text/html", toggle ? "ON" : "OFF");
     });
 
@@ -98,6 +99,41 @@ void setup() {
         cm.wifiStartConfig();
         return; //should not be needed, controller is reset after configuring
     }
+
+    cm.mqttPublish("MyDevice/status", "unknown");
+}
+```
+
+### mqtt client with ota
+
+Connect as wifi client and setup mqtt. On failure launch config portal. Enabke OTA via MQTT.
+
+```cpp
+#include <Arduino.h>
+#include "ConMan.h"
+
+ConMan cm("MyDevice");
+
+void mqttCallback(char* topic, char* payload) {
+    if (strcmp(topic, "MyDevice/ota") == 0) {
+        cm.restartIntoOtaMode();
+        return;
+    }
+}
+
+void loop() {
+    cm.loop();
+}
+
+void setup() {
+    if (!cm.wifiConnectAsClient() || !cm.setupMqtt()) {
+        cm.wifiStartConfig();
+        return; //should not be needed, controller is reset after configuring
+    }
+    cm.checkStartOtaMode();
+
+    cm.setupMqtt(mqttCallback);
+    cm.mqttSubscribe("MyDevice/#");
 
     cm.mqttPublish("MyDevice/status", "unknown");
 }

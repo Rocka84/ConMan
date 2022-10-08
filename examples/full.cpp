@@ -36,6 +36,7 @@ void setup() {
 
     cm.serverOn("/toggle", []() {
         toggle = !toggle;
+        cm.mqttPublish("MyDevice/status/toggle", toggle ? "ON" : "OFF");
         cm.getServer()->send(200, "text/html", toggle ? "ON" : "OFF");
     });
 
