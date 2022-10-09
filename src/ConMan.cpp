@@ -252,7 +252,7 @@ bool ConMan::checkStartConfig() {
 
 
 bool ConMan::checkStartOtaMode() {
-    checkStartOtaMode(false);
+    return checkStartOtaMode(false);
 }
 
 bool ConMan::checkStartOtaMode(bool default_route) {
